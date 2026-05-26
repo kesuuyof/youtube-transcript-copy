@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Transcript Copy",
+  "version": "1.0.0",
+  "description": "YouTubeのトランスクリプトをプロンプト付きでクリップボードにコピーします",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Copy Transcript with Prompt",
+    "default_icon": {
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "128": "icons/icon128.png"
+  }
+}

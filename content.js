@@ -21,6 +21,10 @@
     const videoId = videoDetails.videoId || "";
     const url = `https://www.youtube.com/watch?v=${videoId}`;
 
+    // 公開日（microformat から取得。publishDate 優先、なければ uploadDate）
+    const microformat = playerResponse.microformat?.playerMicroformatRenderer || {};
+    const publishDate = formatDate(microformat.publishDate || microformat.uploadDate || "");
+
     const captionTracks =
       playerResponse.captions?.playerCaptionsTracklistRenderer?.captionTracks;
 
@@ -75,6 +79,7 @@
       title,
       author,
       url,
+      publishDate,
       languageCode: track.languageCode,
       transcript
     });
@@ -596,8 +601,17 @@
     return ta.value;
   }
 
-  function buildPrompt({ title, author, url, languageCode, transcript }) {
+  function formatDate(raw) {
+    if (!raw) return "";
+    // microformat の publishDate は "2024-01-15T00:00:00-07:00" や "2024-01-15" の形
+    const m = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+    return String(raw).trim();
+  }
+
+  function buildPrompt({ title, author, url, publishDate, languageCode, transcript }) {
     const isJa = languageCode === "ja";
+    const dateLine = publishDate ? `\n- 公開日: ${publishDate}` : "";
     return `以下はYouTube動画のトランスクリプトです。
 内容を日本語で要約してください。
 
@@ -605,7 +619,7 @@
 ## 動画情報
 - タイトル: ${title}
 - チャンネル: ${author}
-- URL: ${url}
+- URL: ${url}${dateLine}
 
 冒頭にこの動画情報セクションを必ずそのまま含めてください。
 
@@ -624,7 +638,7 @@
 # 入力データ
 - タイトル: ${title}
 - チャンネル: ${author}
-- URL: ${url}
+- URL: ${url}${dateLine}
 - 字幕言語: ${languageCode}${isJa ? "（日本語）" : ""}
 
 # トランスクリプト
